@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 
 # ROS2 Imports
-import rclpy
-from rclpy.node import Node
-from rclpy.qos import QoSPresetProfiles, qos_profile_sensor_data 
-from sensor_msgs.msg import Image
-from challenge_interfaces.msg import ObjectState
-
 # Developer Imports
 import cv2
+import rclpy
+from challenge_interfaces.msg import ObjectState
 from cv_bridge import CvBridge
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from sensor_msgs.msg import Image
 
 
 class ObjectTracker(Node):
-
     # Constructor
     def __init__(self):
         super().__init__("object_tracker")
@@ -32,8 +30,8 @@ class ObjectTracker(Node):
         )
 
         self.__set_camera_topic(
-            self.get_camera_name()+
-            self.get_parameter("camera_topic").get_parameter_value().string_value
+            self.get_camera_name()
+            + self.get_parameter("camera_topic").get_parameter_value().string_value
         )
 
         self.__set_debug_topic(
@@ -48,9 +46,7 @@ class ObjectTracker(Node):
             self.get_parameter("min_area").get_parameter_value().integer_value
         )
 
-        self.__set_color(
-            self.get_parameter("color").get_parameter_value().string_value
-        )
+        self.__set_color(self.get_parameter("color").get_parameter_value().string_value)
 
         # Attributes
         self.__set_cv_bridge(CvBridge())
@@ -60,22 +56,14 @@ class ObjectTracker(Node):
             Image,
             self.get_camera_topic(),
             self.image_callback,
-            qos_profile=qos_profile_sensor_data
+            qos_profile=qos_profile_sensor_data,
         )
         self.set_is_reading(True)
 
         # Publishers
-        self.state_pub = self.create_publisher(
-            ObjectState,
-            self.get_state_topic(),
-            10
-        )
+        self.state_pub = self.create_publisher(ObjectState, self.get_state_topic(), 10)
 
-        self.debug_pub = self.create_publisher(
-            Image,
-            self.get_debug_topic(),
-            10
-        )
+        self.debug_pub = self.create_publisher(Image, self.get_debug_topic(), 10)
 
         self.get_logger().info(
             f"Tracking objects with {self.__color} color from {self.get_camera_topic()}"
@@ -87,7 +75,7 @@ class ObjectTracker(Node):
 
     def __set_camera_topic(self, topic: str):
         self.__camera_topic = topic
-    
+
     def __set_debug_topic(self, topic: str):
         self.__debug_topic = topic
 
@@ -124,7 +112,7 @@ class ObjectTracker(Node):
 
     def get_cv_bridge(self):
         return self.__bridge
-    
+
     def get_color(self):
         lower_ref = (0, 0, 0)
         upper_ref = (0, 0, 0)
@@ -160,19 +148,15 @@ class ObjectTracker(Node):
         ref = (lower_ref, upper_ref)
 
         return ref
-    
+
     def is_reading(self):
         return self.__is_reading
 
     # Callbacks
     def image_callback(self, msg: Image):
-
         if self.is_reading():
             try:
-                frame = self.get_cv_bridge().imgmsg_to_cv2(
-                    msg,
-                    desired_encoding="bgr8"
-                )
+                frame = self.get_cv_bridge().imgmsg_to_cv2(msg, desired_encoding="bgr8")
 
                 debug_frame = frame.copy()
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -192,9 +176,7 @@ class ObjectTracker(Node):
 
                 # try to find the connected regions
                 contours, _ = cv2.findContours(
-                    mask,
-                    cv2.RETR_EXTERNAL,
-                    cv2.CHAIN_APPROX_SIMPLE
+                    mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
                 )
 
                 # initialize the object state msg
@@ -208,7 +190,6 @@ class ObjectTracker(Node):
 
                 # if any contours exists
                 if contours:
-
                     # take the largest contour (focus on one object)
                     largest = max(contours, key=cv2.contourArea)
                     # compute the area size
@@ -228,16 +209,12 @@ class ObjectTracker(Node):
                         state.y = float(center_y)
 
                         # create the confidence equation
-                        confidence = min(area/(w*h), 1.0)
+                        confidence = min(area / (w * h), 1.0)
                         state.confidence = float(confidence)
 
                         # draw the rectangle
                         cv2.rectangle(
-                            debug_frame,
-                            (x, y),
-                            (x + w, y + h),
-                            (0, 255, 0),
-                            2
+                            debug_frame, (x, y), (x + w, y + h), (0, 255, 0), 2
                         )
 
                         # draw the center point
@@ -246,7 +223,7 @@ class ObjectTracker(Node):
                             (int(center_x), int(center_y)),
                             5,
                             (255, 0, 0),
-                            -1
+                            -1,
                         )
 
                         # draw the text
@@ -257,15 +234,14 @@ class ObjectTracker(Node):
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.5,
                             (0, 255, 0),
-                            2
+                            2,
                         )
 
                 self.state_pub.publish(state)
 
                 # convert and publish the image
                 debug_msg = self.get_cv_bridge().cv2_to_imgmsg(
-                    debug_frame,
-                    encoding="bgr8"
+                    debug_frame, encoding="bgr8"
                 )
                 debug_msg.header = msg.header
                 self.debug_pub.publish(debug_msg)
