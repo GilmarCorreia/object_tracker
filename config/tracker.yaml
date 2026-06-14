@@ -1,0 +1,8 @@
+/**/object_tracker:
+  ros__parameters:
+    use_sim_time: false
+    camera_name: camera
+    camera_topic: /image_raw
+    debug_topic: /tracker/debug_image
+    state_topic: /tracker/object_state
+    min_area: 500
