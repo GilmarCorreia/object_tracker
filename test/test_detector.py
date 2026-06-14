@@ -19,7 +19,7 @@ def test_detect_yellow_circle():
         -1
     )
 
-    result = detect_object(
+    result, _ = detect_object(
         img,
         ((25, 100, 100), (35, 255, 255))
     )
@@ -36,7 +36,7 @@ def test_no_object():
         dtype=np.uint8
     )
 
-    result = detect_object(
+    result, _ = detect_object(
         img,
         ((25, 100, 100), (35, 255, 255))
     )
