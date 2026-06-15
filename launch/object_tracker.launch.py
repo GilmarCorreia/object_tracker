@@ -31,9 +31,9 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 'color',
                 default_value='yellow',
-                description='Color name for object detection: \
-                             yellow, red_lower, red_upper, \
-                             orange, green, blue',
+                description='Color name for object detection:' +
+                            'yellow, red_lower, red_upper, ' +
+                            'orange, green, blue',
                 choices=[
                     'yellow',
                     'red_lower',
