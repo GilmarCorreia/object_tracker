@@ -4,6 +4,7 @@
 from challenge_interfaces.msg import ObjectState
 import cv2
 from cv_bridge import CvBridge
+import json
 from object_tracker.detector import detect_object
 import rclpy
 from rclpy.node import Node
@@ -89,9 +90,9 @@ class ObjectTracker(Node):
         )
 
         self.get_logger().info(
-            f'Tracking objects with \
-            {self.__color} color from \
-            {self.get_camera_topic()}'
+            'Tracking objects with ' +
+            f'{self.__color} color from ' +
+            f'{self.get_camera_topic()}'
         )
 
     # Setters
@@ -165,8 +166,8 @@ class ObjectTracker(Node):
             upper_ref = (35, 255, 255)
         else:
             self.get_logger().warn(
-                f"Color '{self.__color}' not recognized.\
-                  Defaulting to yellow."
+                f"Color '{self.__color}' not recognized. " +
+                'Defaulting to yellow.'
             )
             lower_ref = (25, 100, 100)
             upper_ref = (35, 255, 255)
@@ -195,7 +196,7 @@ class ObjectTracker(Node):
 
                 # initialize the object state msg
                 state = json_message_converter.convert_json_to_ros_message(
-                    'challenge_interfaces/msg/ObjectState', result
+                    'challenge_interfaces/msg/ObjectState', json.dumps(result)
                 )
                 state.header.stamp = self.get_clock().now().to_msg()
 
