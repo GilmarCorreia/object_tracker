@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
+import json
+
 # Imports
 from challenge_interfaces.msg import ObjectState
 import cv2
 from cv_bridge import CvBridge
-import json
 from object_tracker.detector import detect_object
 import rclpy
 from rclpy.node import Node
